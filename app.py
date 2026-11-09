@@ -33,7 +33,7 @@ def get_model():
             
     return YOLO(MODEL_PATH)
 
-model = get_model()----------------------------------
+model = get_model()
 
 # คลาสประมวลผลวิดีโอแบบเรียลไทม์ผ่าน WebRTC
 class MeatTrackerTransformer(VideoTransformerBase):
