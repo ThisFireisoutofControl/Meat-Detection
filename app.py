@@ -19,7 +19,7 @@ RTC_CONFIGURATION = RTCConfiguration(
 # --- [จุดที่แก้ไข: ตรวจสอบและดาวน์โหลดโมเดลอัตโนมัติ] ---
 MODEL_PATH = "best.pt"
 # ตรวจสอบให้แน่ใจว่าใส่เฉพาะ ID (ตัวเลขและตัวอักษรยาวๆ)
-GDRIVE_FILE_ID = "https://drive.google.com/file/d/1iVZoYRtaRmeiKOgTjnQjy4vv_513sJjl/view?usp=sharing"
+GDRIVE_FILE_ID = "https://drive.google.com/file/d/1iVZoYRtaRmeiKOgTjnQjy4vv_513sJjl"
 
 @st.cache_resource
 def get_model():
