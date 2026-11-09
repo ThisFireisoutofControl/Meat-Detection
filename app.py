@@ -17,19 +17,23 @@ RTC_CONFIGURATION = RTCConfiguration(
 
 # --- [จุดที่แก้ไข: ตรวจสอบและดาวน์โหลดโมเดลอัตโนมัติ] ---
 MODEL_PATH = "best.pt"
-# นำ File ID จากลิงก์ Google Drive ของคุณมาใส่ตรงนี้ (เช่น 1aBcDeFgHiJkLmNoPqRsTuVwXyZ)
+# ตรวจสอบให้แน่ใจว่าใส่เฉพาะ ID (ตัวเลขและตัวอักษรยาวๆ)
 GDRIVE_FILE_ID = "https://drive.google.com/file/d/1iVZoYRtaRmeiKOgTjnQjy4vv_513sJjl/view?usp=sharing"
 
 @st.cache_resource
 def get_model():
-    if not os.path.exists(MODEL_PATH):
+    # ถ้าไฟล์ยังไม่มี หรือขนาดเล็กผิดปกติ (น้อยกว่า 1MB แปลว่าเป็นไฟล์ HTML error)
+    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 1_000_000:
+        if os.path.exists(MODEL_PATH):
+            os.remove(MODEL_PATH)  # ลบไฟล์เสียเดิมทิ้งก่อน
+            
         with st.spinner("กำลังดาวน์โหลดไฟล์โมเดล... กรุณารอสักครู่"):
-            url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
-            gdown.download(url, MODEL_PATH, quiet=False)
+            # ใช้ gdown ด้วย id ตรงๆ พร้อม fuzzy=True เพื่อข้ามหน้ายืนยันไวรัส
+            gdown.download(id=GDRIVE_FILE_ID, output=MODEL_PATH, quiet=False, fuzzy=True)
+            
     return YOLO(MODEL_PATH)
 
-model = get_model()
-# ----------------------------------------------------
+model = get_model()----------------------------------
 
 # คลาสประมวลผลวิดีโอแบบเรียลไทม์ผ่าน WebRTC
 class MeatTrackerTransformer(VideoTransformerBase):
