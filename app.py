@@ -6,6 +6,7 @@ import av
 import os
 import gdown
 from ultralytics import YOLO
+import urllib.request
 
 st.set_page_config(page_title="Smart BBQ Tracker", layout="wide")
 st.title("🥩 Real-Time Individual Meat Tracker & Timer")
@@ -22,15 +23,22 @@ GDRIVE_FILE_ID = "https://drive.google.com/file/d/1iVZoYRtaRmeiKOgTjnQjy4vv_513s
 
 @st.cache_resource
 def get_model():
-    # ถ้าไฟล์ยังไม่มี หรือขนาดเล็กผิดปกติ (น้อยกว่า 1MB แปลว่าเป็นไฟล์ HTML error)
-    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 1_000_000:
+    # ตรวจสอบว่าไฟล์มีอยู่จริง และมีขนาดมากกว่า 5MB (เพื่อป้องกันการได้ไฟล์ HTML เปล่า)
+    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 5_000_000:
         if os.path.exists(MODEL_PATH):
-            os.remove(MODEL_PATH)  # ลบไฟล์เสียเดิมทิ้งก่อน
+            os.remove(MODEL_PATH)
             
         with st.spinner("กำลังดาวน์โหลดไฟล์โมเดล... กรุณารอสักครู่"):
-            # ใช้ gdown ด้วย id ตรงๆ พร้อม fuzzy=True เพื่อข้ามหน้ายืนยันไวรัส
-            gdown.download(id=GDRIVE_FILE_ID, output=MODEL_PATH, quiet=False, fuzzy=True)
+            # URL สำหรับดาวน์โหลดไฟล์ตรงจาก Google Drive แบบยืนยันอัตโนมัติ
+            download_url = f"https://drive.usercontent.google.com/download?id={GDRIVE_FILE_ID}&export=download&confirm=t"
             
+            # กำหนด User-Agent เพื่อป้องกันไม่ให้ Google บล็อก Request
+            headers = {"User-Agent": "Mozilla/5.0"}
+            req = urllib.request.Request(download_url, headers=headers)
+            
+            with urllib.request.urlopen(req) as response, open(MODEL_PATH, "wb") as out_file:
+                out_file.write(response.read())
+
     return YOLO(MODEL_PATH)
 
 model = get_model()
