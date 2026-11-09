@@ -3,6 +3,8 @@ from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfigura
 import cv2
 import time
 import av
+import os
+import gdown
 from ultralytics import YOLO
 
 st.set_page_config(page_title="Smart BBQ Tracker", layout="wide")
@@ -13,12 +15,21 @@ RTC_CONFIGURATION = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
 
-# โหลดโมเดล YOLO (Detection/Segmentation)
+# --- [จุดที่แก้ไข: ตรวจสอบและดาวน์โหลดโมเดลอัตโนมัติ] ---
+MODEL_PATH = "best.pt"
+# นำ File ID จากลิงก์ Google Drive ของคุณมาใส่ตรงนี้ (เช่น 1aBcDeFgHiJkLmNoPqRsTuVwXyZ)
+GDRIVE_FILE_ID = "https://drive.google.com/file/d/1iVZoYRtaRmeiKOgTjnQjy4vv_513sJjl/view?usp=sharing"
+
 @st.cache_resource
 def get_model():
-    return YOLO("best.pt")
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("กำลังดาวน์โหลดไฟล์โมเดล... กรุณารอสักครู่"):
+            url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
+            gdown.download(url, MODEL_PATH, quiet=False)
+    return YOLO(MODEL_PATH)
 
 model = get_model()
+# ----------------------------------------------------
 
 # คลาสประมวลผลวิดีโอแบบเรียลไทม์ผ่าน WebRTC
 class MeatTrackerTransformer(VideoTransformerBase):
