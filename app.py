@@ -18,24 +18,19 @@ RTC_CONFIGURATION = RTCConfiguration(
 
 # --- [จุดที่แก้ไข: ตรวจสอบและดาวน์โหลดโมเดลอัตโนมัติ] ---
 MODEL_PATH = "best.pt"
-# ตรวจสอบให้แน่ใจว่าใส่เฉพาะ ID (ตัวเลขและตัวอักษรยาวๆ)
-GDRIVE_FILE_ID = "https://drive.google.com/file/d/1iVZoYRtaRmeiKOgTjnQjy4vv_513sJjl"
+# แทนที่ด้วย URL ของ Releases ที่คัดลอกมา
+MODEL_URL = "https://github.com/ThisFireisoutofControl/Meat-Detection/releases/download/v1.0.0/best.pt"
 
 @st.cache_resource
 def get_model():
-    # ตรวจสอบว่าไฟล์มีอยู่จริง และมีขนาดมากกว่า 5MB (เพื่อป้องกันการได้ไฟล์ HTML เปล่า)
-    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 5_000_000:
+    # ตรวจสอบว่าไฟล์มีอยู่จริงและมีขนาดเกิน 1MB เพื่อป้องกันไฟล์ว่าง
+    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) < 1_000_000:
         if os.path.exists(MODEL_PATH):
             os.remove(MODEL_PATH)
             
         with st.spinner("กำลังดาวน์โหลดไฟล์โมเดล... กรุณารอสักครู่"):
-            # URL สำหรับดาวน์โหลดไฟล์ตรงจาก Google Drive แบบยืนยันอัตโนมัติ
-            download_url = f"https://drive.usercontent.google.com/download?id={GDRIVE_FILE_ID}&export=download&confirm=t"
-            
-            # กำหนด User-Agent เพื่อป้องกันไม่ให้ Google บล็อก Request
             headers = {"User-Agent": "Mozilla/5.0"}
-            req = urllib.request.Request(download_url, headers=headers)
-            
+            req = urllib.request.Request(MODEL_URL, headers=headers)
             with urllib.request.urlopen(req) as response, open(MODEL_PATH, "wb") as out_file:
                 out_file.write(response.read())
 
